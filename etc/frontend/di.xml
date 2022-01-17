@@ -13,7 +13,8 @@
     <type name="Magento\Payment\Model\CcGenericConfigProvider">
         <arguments>
             <argument name="methodCodes" xsi:type="array">
-                <item name="liqpaymagento_liqpay" xsi:type="const">LiqpayMagento\LiqPay\Model\Payment::METHOD_CODE</item>
+                <item name="liqpaymagento_liqpay" xsi:type="const">LiqpayMagento\LiqPay\Model\Payment::METHOD_CODE
+                </item>
             </argument>
         </arguments>
     </type>

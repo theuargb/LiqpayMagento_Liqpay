@@ -10,40 +10,44 @@
 
 namespace LiqpayMagento\LiqPay\Model;
 
+use Exception;
 use LiqpayMagento\LiqPay\Api\LiqPayCallbackInterface;
-use Magento\Sales\Model\Order;
-use LiqpayMagento\LiqPay\Sdk\LiqPay;
-use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Service\InvoiceService;
-use Magento\Framework\DB\Transaction;
 use LiqpayMagento\LiqPay\Helper\Data as Helper;
+use LiqpayMagento\LiqPay\Sdk\LiqPay;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\DB\Transaction;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Service\InvoiceService;
 
-
+/**
+ * Class LiqPayCallback
+ * @package LiqpayMagento\LiqPay\Model
+ */
 class LiqPayCallback implements LiqPayCallbackInterface
 {
     /**
-     * @var \Magento\Sales\Model\Order
+     * @var Order
      */
     protected $_order;
 
     /**
-     * @var \LiqpayMagento\LiqPay\Sdk\LiqPay
+     * @var LiqPay
      */
     protected $_liqPay;
 
     /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     * @var OrderRepositoryInterface
      */
     protected $_orderRepository;
 
     /**
-     * @var \Magento\Sales\Model\Service\InvoiceService
+     * @var InvoiceService
      */
     protected $_invoiceService;
 
     /**
-     * @var \Magento\Framework\DB\Transaction
+     * @var Transaction
      */
     protected $_transaction;
 
@@ -57,16 +61,26 @@ class LiqPayCallback implements LiqPayCallbackInterface
      */
     protected $_request;
 
+    /**
+     * LiqPayCallback constructor.
+     *
+     * @param Order $order
+     * @param OrderRepositoryInterface $orderRepository
+     * @param InvoiceService $invoiceService
+     * @param Transaction $transaction
+     * @param Helper $helper
+     * @param LiqPay $liqPay
+     * @param RequestInterface $request
+     */
     public function __construct(
-        Order $order,
+        Order                    $order,
         OrderRepositoryInterface $orderRepository,
-        InvoiceService $invoiceService,
-        Transaction $transaction,
-        Helper $helper,
-        LiqPay $liqPay,
-        RequestInterface $request
-    )
-    {
+        InvoiceService           $invoiceService,
+        Transaction              $transaction,
+        Helper                   $helper,
+        LiqPay                   $liqPay,
+        RequestInterface         $request
+    ) {
         $this->_order = $order;
         $this->_liqPay = $liqPay;
         $this->_orderRepository = $orderRepository;
@@ -76,6 +90,9 @@ class LiqPayCallback implements LiqPayCallbackInterface
         $this->_request = $request;
     }
 
+    /**
+     * @return null
+     */
     public function callback()
     {
         $post = $this->_request->getParams();
@@ -102,8 +119,8 @@ class LiqPayCallback implements LiqPayCallbackInterface
                 return null;
             }
 
-        // ALWAYS CHECK signature field from Liqpay server!!!!
-        // DON'T delete this block, be careful of fraud!!!
+            // ALWAYS CHECK signature field from Liqpay server!!!!
+            // DON'T delete this block, be careful of fraud!!!
             if (!$this->_helper->securityOrderCheck($data, $receivedPublicKey, $receivedSignature)) {
                 $order->addStatusHistoryComment(__('LiqPay security check failed!'));
                 $this->_orderRepository->save($order);
@@ -115,7 +132,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
             switch ($status) {
                 case LiqPay::STATUS_SANDBOX:
                 case LiqPay::STATUS_WAIT_COMPENSATION:
-                // case LiqPay::STATUS_SUBSCRIBED:
+                    // case LiqPay::STATUS_SUBSCRIBED:
                 case LiqPay::STATUS_SUCCESS:
                     if ($order->canInvoice()) {
                         $invoice = $this->_invoiceService->prepareInvoice($order);
@@ -131,7 +148,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
                         } else {
                             $historyMessage[] = __('Invoice #%1 created.', $invoice->getIncrementId());
                         }
-                        $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
+                        $state = Order::STATE_PROCESSING;
                     } else {
                         $historyMessage[] = __('Error during creation of invoice.');
                     }
@@ -146,23 +163,23 @@ class LiqPayCallback implements LiqPayCallbackInterface
                     }
                     break;
                 case LiqPay::STATUS_FAILURE:
-                    $state = \Magento\Sales\Model\Order::STATE_CANCELED;
+                    $state = Order::STATE_CANCELED;
                     $historyMessage[] = __('Liqpay error.');
                     break;
                 case LiqPay::STATUS_ERROR:
-                    $state = \Magento\Sales\Model\Order::STATE_CANCELED;
+                    $state = Order::STATE_CANCELED;
                     $historyMessage[] = __('Liqpay error.');
                     break;
                 case LiqPay::STATUS_WAIT_SECURE:
-                    $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
+                    $state = Order::STATE_PROCESSING;
                     $historyMessage[] = __('Waiting for verification from the Liqpay side.');
                     break;
                 case LiqPay::STATUS_WAIT_ACCEPT:
-                    $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
+                    $state = Order::STATE_PROCESSING;
                     $historyMessage[] = __('Waiting for accepting from the buyer side.');
                     break;
                 case LiqPay::STATUS_WAIT_CARD:
-                    $state = \Magento\Sales\Model\Order::STATE_PROCESSING;
+                    $state = Order::STATE_PROCESSING;
                     $historyMessage[] = __('Waiting for setting refund card number into your Liqpay shop.');
                     break;
                 default:
@@ -174,7 +191,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
             }
             if (count($historyMessage)) {
                 $order->addStatusHistoryComment(implode(' ', $historyMessage))
-                    ->setIsCustomerNotified(true);
+                      ->setIsCustomerNotified(true);
             }
             if ($state) {
                 $order->setState($state);
@@ -182,12 +199,18 @@ class LiqPayCallback implements LiqPayCallbackInterface
                 $order->save();
             }
             $this->_orderRepository->save($order);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_helper->getLogger()->critical($e);
         }
         return null;
     }
 
+    /**
+     * @param $status
+     * @param $orderId
+     *
+     * @return mixed
+     */
     protected function getRealOrder($status, $orderId)
     {
         if ($status == LiqPay::STATUS_SANDBOX) {

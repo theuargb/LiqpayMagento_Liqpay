@@ -10,19 +10,26 @@
 
 namespace LiqpayMagento\LiqPay\Controller\Checkout;
 
+use Exception;
+use LiqpayMagento\LiqPay\Block\SubmitForm;
+use LiqpayMagento\LiqPay\Helper\Data as Helper;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\View\LayoutFactory;
-use Magento\Checkout\Model\Session as CheckoutSession;
-use LiqpayMagento\LiqPay\Helper\Data as Helper;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\NotFoundException;
 
-
+/**
+ * Class Form
+ * @package LiqpayMagento\LiqPay\Controller\Checkout
+ */
 class Form extends Action
 {
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var CheckoutSession
      */
     protected $_checkoutSession;
 
@@ -32,51 +39,50 @@ class Form extends Action
     protected $_helper;
 
     /**
-     * @var LayoutFactory
+     * Form constructor.
+     *
+     * @param Context $context
+     * @param CheckoutSession $checkoutSession
+     * @param Helper $helper
      */
-    protected $_layoutFactory;
-
     public function __construct(
-        Context $context,
+        Context         $context,
         CheckoutSession $checkoutSession,
-        Helper $helper,
-        LayoutFactory $layoutFactory
-    )
-    {
+        Helper          $helper
+    ) {
         parent::__construct($context);
         $this->_checkoutSession = $checkoutSession;
         $this->_helper = $helper;
-        $this->_layoutFactory = $layoutFactory;
     }
 
     /**
      * Dispatch request
      *
-     * @return \Magento\Framework\Controller\ResultInterface|ResponseInterface
-     * @throws \Magento\Framework\Exception\NotFoundException
+     * @return ResultInterface|ResponseInterface
+     * @throws NotFoundException
      */
     public function execute()
     {
         try {
             if (!$this->_helper->isEnabled()) {
-                throw new \Exception(__('Payment is not allow.'));
+                throw new Exception(__('Payment is not allow.'));
             }
             $order = $this->getCheckoutSession()->getLastRealOrder();
             if (!($order && $order->getId())) {
-                throw new \Exception(__('Order not found'));
+                throw new Exception(__('Order not found'));
             }
             if ($this->_helper->checkOrderIsLiqPayPayment($order)) {
-                /* @var $formBlock \LiqpayMagento\LiqPay\Block\SubmitForm */
-                $formBlock = $this->_layoutFactory->create()->createBlock('LiqpayMagento\LiqPay\Block\SubmitForm');
+                /* @var $formBlock SubmitForm */
+                $formBlock = $this->_view->getLayout()->createBlock('LiqpayMagento\LiqPay\Block\SubmitForm');
                 $formBlock->setOrder($order);
                 $data = [
                     'status' => 'success',
-                    'content' => $formBlock->toHtml(),
+                    'content' => $formBlock->getLiqpayForm(),
                 ];
             } else {
-                throw new \Exception('Order payment method is not a LiqPay payment method');
+                throw new Exception('Order payment method is not a LiqPay payment method');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addExceptionMessage($e, __('Something went wrong, please try again later'));
             $this->_helper->getLogger()->critical($e);
             $this->getCheckoutSession()->restoreQuote();
@@ -85,7 +91,7 @@ class Form extends Action
                 'redirect' => $this->_url->getUrl('checkout/cart'),
             ];
         }
-        /** @var \Magento\Framework\Controller\Result\Json $result */
+        /** @var Json $result */
         $result = $this->resultFactory->create(ResultFactory::TYPE_JSON);
         $result->setData($data);
         return $result;
@@ -95,7 +101,7 @@ class Form extends Action
     /**
      * Return checkout session object
      *
-     * @return \Magento\Checkout\Model\Session
+     * @return CheckoutSession
      */
     protected function getCheckoutSession()
     {
