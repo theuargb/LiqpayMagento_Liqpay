@@ -10,7 +10,7 @@
 -->
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <route url="/V1/liqpay/hydrateData" method="GET">
+    <route url="/V1/liqpay/hydrateWidget" method="GET">
         <service class="LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface" method="getHydrateData"/>
         <resources>
             <resource ref="anonymous"/>
