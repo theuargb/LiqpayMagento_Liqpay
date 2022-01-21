@@ -31,9 +31,12 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
         $this->json = $json;
     }
 
-    public function getHydrateData()
+    public function getHydrateData(string $orderId)
     {
         $order = $this->checkoutSession->getLastRealOrder();
+        if ((string)$order->getId() != $orderId) {
+            return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
+        }
 
         $liqPayData = $this->liqPay->cnb_form_raw([
             'public_key' => $this->liqPay->getHelper()->getPublicKey(),
@@ -45,6 +48,6 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
             'order_id' => "{$order->getId()}",
         ]);
 
-        return $this->json->serialize($liqPayData);
+        return (string)$this->json->serialize($liqPayData);
     }
 }
