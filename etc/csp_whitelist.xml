@@ -11,6 +11,11 @@
                 <value id="liqpay-js" type="host">https://static.liqpay.ua</value>
             </values>
         </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="liqpay-widget-iframe" type="host">https://liqpay.ua</value>
+            </values>
+        </policy>
         <policy id="connect-src">
             <values>
                 <value id="liqpay-api" type="host">https://www.liqpay.ua</value>
