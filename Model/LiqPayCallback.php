@@ -15,6 +15,7 @@ use LiqpayMagento\LiqPay\Api\LiqPayCallbackInterface;
 use LiqpayMagento\LiqPay\Helper\Data as Helper;
 use LiqpayMagento\LiqPay\Sdk\LiqPay;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\DB\Transaction;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -91,7 +92,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
     }
 
     /**
-     * @return null
+     * @return ResultInterface
      */
     public function callback()
     {
@@ -163,9 +164,6 @@ class LiqPayCallback implements LiqPayCallbackInterface
                     }
                     break;
                 case LiqPay::STATUS_FAILURE:
-                    $state = Order::STATE_CANCELED;
-                    $historyMessage[] = __('Liqpay error.');
-                    break;
                 case LiqPay::STATUS_ERROR:
                     $state = Order::STATE_CANCELED;
                     $historyMessage[] = __('Liqpay error.');
@@ -202,6 +200,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
         } catch (Exception $e) {
             $this->_helper->getLogger()->critical($e);
         }
+
         return null;
     }
 

@@ -5,6 +5,7 @@ namespace LiqpayMagento\LiqPay\Model;
 use LiqpayMagento\LiqPay\Sdk\LiqPay;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\UrlInterface;
 
 class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
 {
@@ -20,15 +21,15 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
     private $liqPay;
 
     /**
-     * @var Json
+     * @var UrlInterface
      */
-    private $json;
+    private $urlBuilder;
 
-    public function __construct(CheckoutSession $checkoutSession, LiqPay $liqPay, Json $json)
+    public function __construct(CheckoutSession $checkoutSession, LiqPay $liqPay, UrlInterface $urlBuilder)
     {
         $this->checkoutSession = $checkoutSession;
         $this->liqPay = $liqPay;
-        $this->json = $json;
+        $this->urlBuilder = $urlBuilder;
     }
 
     public function getHydrateData(string $orderId)
@@ -38,7 +39,7 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
             // return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
         }
 
-        $liqPayData = $this->liqPay->cnb_form_raw([
+        $cnbFormRawData = $this->liqPay->cnb_form_raw([
             'public_key' => $this->liqPay->getHelper()->getPublicKey(),
             'version' => '3',
             'action' => 'pay',
@@ -48,6 +49,14 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
             'order_id' => "{$order->getId()}",
         ]);
 
-        return (string)$this->json->serialize($liqPayData);
+        return (new WidgetData())->setData($cnbFormRawData['data'])->setSignature($cnbFormRawData['signature']);
+    }
+
+    /**
+     * @return string
+     */
+    public function getRedirectUrl()
+    {
+        return $this->urlBuilder->getUrl('checkout/success');
     }
 }

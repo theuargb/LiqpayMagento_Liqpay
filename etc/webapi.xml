@@ -16,6 +16,12 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
+    <route url="/V1/liqpay/getRedirectUrl" method="GET">
+        <service class="LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface" method="getRedirectUrl"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
     <route url="/V1/liqpay/callback" method="POST">
         <service class="LiqpayMagento\LiqPay\Api\LiqPayCallbackInterface" method="callback"/>
         <resources>

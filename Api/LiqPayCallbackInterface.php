@@ -10,15 +10,17 @@
 
 namespace LiqpayMagento\LiqPay\Api;
 
+use Magento\Framework\Controller\ResultInterface;
+
 /**
  * Interface LiqPayCallbackInterface
  * @package LiqpayMagento\LiqPay\Api
  */
 interface LiqPayCallbackInterface
 {
+
     /**
-     * @return null
-     * @api
+     * @return ResultInterface
      */
     public function callback();
 }
