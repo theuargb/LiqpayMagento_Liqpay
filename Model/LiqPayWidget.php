@@ -35,7 +35,7 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
     {
         $order = $this->checkoutSession->getLastRealOrder();
         if ((string)$order->getId() != $orderId) {
-            return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
+            // return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
         }
 
         $liqPayData = $this->liqPay->cnb_form_raw([
