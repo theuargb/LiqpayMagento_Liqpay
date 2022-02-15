@@ -57,6 +57,6 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
      */
     public function getRedirectUrl()
     {
-        return $this->urlBuilder->getUrl('checkout/success');
+        return $this->urlBuilder->getUrl('hyva/reactcheckout/success');
     }
 }
