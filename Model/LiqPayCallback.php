@@ -117,6 +117,10 @@ class LiqPayCallback implements LiqPayCallbackInterface
         try {
             $order = $this->getRealOrder($status, $orderId);
             if (!($order && $order->getId() && $this->_helper->checkOrderIsLiqPayPayment($order))) {
+                $this->_helper->getLogger()->error(__(
+                    'Order does not exist or was created without Liqpay payment'
+                ));
+
                 return null;
             }
 
@@ -223,6 +227,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
                 }
             }
         }
+
         return $this->_order->loadByIncrementId($orderId);
     }
 }

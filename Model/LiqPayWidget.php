@@ -2,12 +2,12 @@
 
 namespace LiqpayMagento\LiqPay\Model;
 
+use LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface;
 use LiqpayMagento\LiqPay\Sdk\LiqPay;
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 
-class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
+class LiqPayWidget implements LiqPayWidgetInterface
 {
 
     /**
@@ -34,7 +34,7 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
 
     public function getHydrateData(string $orderId)
     {
-        $order = $this->checkoutSession->getLastRealOrder();
+        $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
         if ((string)$order->getId() != $orderId) {
             // return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
         }
@@ -45,7 +45,7 @@ class LiqPayWidget implements \LiqpayMagento\LiqPay\Api\LiqPayWidgetInterface
             'action' => 'pay',
             'amount' => "{$order->getGrandTotal()}",
             'currency' => 'UAH',
-            'description' => "Mammy Club Order #{$order->getId()}",
+            'description' => "Mammy Club Order #{$order->getIncrementId()}",
             'order_id' => "{$order->getId()}",
         ]);
 
