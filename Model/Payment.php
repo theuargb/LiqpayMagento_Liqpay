@@ -78,19 +78,19 @@ class Payment extends AbstractMethod
      * @param LiqPay $liqPay
      */
     public function __construct(
-        Context                        $context,
-        Registry                             $registry,
-        ExtensionAttributesFactory       $extensionFactory,
-        AttributeValueFactory            $customAttributeFactory,
-        Data                            $paymentData,
-        ScopeConfigInterface      $scopeConfig,
-        Logger                    $logger,
-        AbstractResource $resource = null,
-        AbstractDb           $resourceCollection = null,
-        array                                                   $data = [],
-        DirectoryHelper                                         $directory = null,
-        UrlInterface                         $urlBuider,
-        LiqPay                        $liqPay
+        Context                    $context,
+        Registry                   $registry,
+        ExtensionAttributesFactory $extensionFactory,
+        AttributeValueFactory      $customAttributeFactory,
+        Data                       $paymentData,
+        ScopeConfigInterface       $scopeConfig,
+        Logger                     $logger,
+        AbstractResource           $resource = null,
+        AbstractDb                 $resourceCollection = null,
+        array                      $data = [],
+        DirectoryHelper            $directory = null,
+        UrlInterface               $urlBuider,
+        LiqPay                     $liqPay
     ) {
         parent::__construct(
             $context,
