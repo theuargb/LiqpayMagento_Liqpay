@@ -40,9 +40,6 @@
                 <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Title</label>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
                 </field>
                 <field id="sendbox_public_key" translate="label" type="text" sortOrder="30" showInDefault="1"
                        showInWebsite="1"

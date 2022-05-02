@@ -35,9 +35,6 @@ class LiqPayWidget implements LiqPayWidgetInterface
     public function getHydrateData(string $orderId)
     {
         $order = $this->checkoutSession->getLastRealOrder()->loadByIncrementId($orderId);
-        if ((string)$order->getId() != $orderId) {
-            // return (string)$this->json->serialize(['error' => 'requested order was not found with current session']);
-        }
 
         $cnbFormRawData = $this->liqPay->cnb_form_raw([
             'public_key' => $this->liqPay->getHelper()->getPublicKey(),
@@ -46,7 +43,7 @@ class LiqPayWidget implements LiqPayWidgetInterface
             'amount' => "{$order->getGrandTotal()}",
             'currency' => 'UAH',
             'description' => "Mammy Club Order #{$order->getIncrementId()}",
-            'order_id' => "{$order->getId()}",
+            'order_id' => "{$order->getIncrementId()}",
         ]);
 
         return (new WidgetData())->setData($cnbFormRawData['data'])->setSignature($cnbFormRawData['signature']);

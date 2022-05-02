@@ -106,7 +106,7 @@ class LiqPayCallback implements LiqPayCallbackInterface
         $receivedSignature = $post['signature'];
 
         $decodedData = $this->_liqPay->getDecodedData($data);
-        $orderId = $decodedData['order_id'] ?? null;
+        $orderIncrementId = $decodedData['order_id'] ?? null;
         $receivedPublicKey = $decodedData['public_key'] ?? null;
         $status = $decodedData['status'] ?? null;
         $amount = $decodedData['amount'] ?? null;
@@ -115,7 +115,9 @@ class LiqPayCallback implements LiqPayCallbackInterface
         $senderPhone = $decodedData['sender_phone'] ?? null;
 
         try {
-            $order = $this->getRealOrder($status, $orderId);
+            /** @var Order $order */
+            $order = $this->getRealOrder($status, $orderIncrementId);
+
             if (!($order && $order->getId() && $this->_helper->checkOrderIsLiqPayPayment($order))) {
                 $this->_helper->getLogger()->error(__(
                     'Order does not exist or was created without Liqpay payment'
@@ -210,24 +212,24 @@ class LiqPayCallback implements LiqPayCallbackInterface
 
     /**
      * @param $status
-     * @param $orderId
+     * @param $orderIncrementId
      *
      * @return mixed
      */
-    protected function getRealOrder($status, $orderId)
+    protected function getRealOrder($status, $orderIncrementId)
     {
         if ($status == LiqPay::STATUS_SANDBOX) {
             $testOrderSurfix = $this->_helper->getTestOrderSurfix();
             if (!empty($testOrderSurfix)) {
                 $testOrderSurfix = LiqPay::TEST_MODE_SURFIX_DELIM . $testOrderSurfix;
-                if (strlen($testOrderSurfix) < strlen($orderId)
-                    && substr($orderId, -strlen($testOrderSurfix)) == $testOrderSurfix
+                if (strlen($testOrderSurfix) < strlen($orderIncrementId)
+                    && substr($orderIncrementId, -strlen($testOrderSurfix)) == $testOrderSurfix
                 ) {
-                    $orderId = substr($orderId, 0, strlen($orderId) - strlen($testOrderSurfix));
+                    $orderIncrementId = substr($orderIncrementId, 0, strlen($orderIncrementId) - strlen($testOrderSurfix));
                 }
             }
         }
 
-        return $this->_order->loadByIncrementId($orderId);
+        return $this->_order->loadByIncrementId($orderIncrementId);
     }
 }
