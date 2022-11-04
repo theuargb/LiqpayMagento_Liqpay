@@ -78,6 +78,8 @@ class Payment extends AbstractMethod
      * @param LiqPay $liqPay
      */
     public function __construct(
+        UrlInterface               $urlBuider,
+        LiqPay                     $liqPay,
         Context                    $context,
         Registry                   $registry,
         ExtensionAttributesFactory $extensionFactory,
@@ -88,9 +90,7 @@ class Payment extends AbstractMethod
         AbstractResource           $resource = null,
         AbstractDb                 $resourceCollection = null,
         array                      $data = [],
-        DirectoryHelper            $directory = null,
-        UrlInterface               $urlBuider,
-        LiqPay                     $liqPay
+        DirectoryHelper            $directory = null
     ) {
         parent::__construct(
             $context,
